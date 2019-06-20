@@ -10,41 +10,74 @@ class CalcController {
         this._timeEl = document.querySelector("#hora");
         this._currentDate;
         this.initialize(); //Construindo o método(inicializando a função)
+        this.initButtonsEvents();
     }
 
     initialize(){ 
+
+         this.setDisplayDateTime();// com essa declaração, a hora e a data aparecem no mesmo instante em que a calculadora é iniciada.
+        
+
+        setInterval(() =>{
+
+            this.setDisplayDateTime();
+
+        }, 1000) // esse segundo argumento especifica que a cada mil milisecundos a hora e a data atualiza, ou seja, a cada segundo.
         
     }
 
+    initButtonsEvents(){
+
+        let buttons = document.querySelectorAll("#buttons > g, #parts > g"); // *querySelectorAll traz todos os elementos filhos do id.
+
+        buttons.forEach(btn=> { //forEach percorre cada elemento.
+
+            btn.addEventListener('click', e => {// primeiro argumento refere-se ao evento e o segundo ao que deve ser feito.
+
+            console.log(e);
+
+                }) 
+                 
+        })
+    }
+
+    setDisplayDateTime(){
+        //especifica a hora e data de acordo com o idioma.
+        this.displayDate = this.currentDate.toLocaleDateString(this._locale); //(this._locale, {day: "2-digit", month: "long", year: "numeric"}), isso...
+        this.displayTime = this.currentDate.toLocaleTimeString(this._locale) //caso eu desejasse colocar a data por extenso.
+
+ }
+
 //recuperando e armazenando informação.
-    get displayCalc(){
-        return this._displayCalcEl.innerHTML;
-    }
-
-    set displayCalc( value){
-        this._displayCalcEl.innerHTML = value;
-    }
-
-    get currentDate(){
-        return new Date();
-    }
-
-    set currentDate(value){
-        this._currentDate = value;
-    }
-
     get displayDate(){
         return this._dateEl.innerHTML;
     }
 
     set displayDate(value){
-        this._dateEl = value;
+        this._dateEl.innerHTML = value;
     }
+
     get displayTime(){
         return this._timeEl.innerHTML;
     }
-    
+
     set displayTime(value){
-        this._timeEl = value;
+        this._timeEl.innerHTML = value;
+    }
+
+   get displayCalc(){
+       return this._displayCalcEl.innerHTML;
+   }
+   
+   set displayCalc(value){
+    this._displayCalcEl.innerHTML = value;
+   }
+
+   get currentDate(){
+        return new Date();
+   }
+
+    set currentDate(value){
+        this._currentDate = value;
     }
 }
