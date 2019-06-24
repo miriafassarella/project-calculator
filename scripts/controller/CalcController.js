@@ -15,36 +15,54 @@ class CalcController {
 
     initialize(){ 
 
-         this.setDisplayDateTime();// com essa declaração, a hora e a data aparecem no mesmo instante em que a calculadora é iniciada.
-        
+         this.setDisplayDateTime();// com essa declaração no início,.. 
+         //a hora e a data aparecem no mesmo instante em que a calculadora é iniciada.
 
         setInterval(() =>{
 
             this.setDisplayDateTime();
 
-        }, 1000) // esse segundo argumento especifica que a cada mil milisecundos a hora e a data atualiza, ou seja, a cada segundo.
+        }, 1000) // esse segundo argumento especifica que a cada mil milisecundos..
+        // a hora e a data atualiza, ou seja, a cada segundo.
         
+    }
+
+    addEventListenerAll(element, events, fn){ //criando meu método.
+
+        events.split(' ').forEach(event =>{
+
+            element.addEventListener(event, fn, false);
+//usamos o false para que o evento ocorra em apenas um elemento.
+        });
     }
 
     initButtonsEvents(){
 
-        let buttons = document.querySelectorAll("#buttons > g, #parts > g"); // *querySelectorAll traz todos os elementos filhos do id.
+        let buttons = document.querySelectorAll("#buttons > g, #parts > g"); // *querySelectorAll traz todos ...
+        //os elementos filhos do id.
 
-        buttons.forEach(btn=> { //forEach percorre cada elemento.
+        buttons.forEach((btn, index)=> { //forEach percorre cada elemento.
+            // primeiro argumento refere-se ao evento e o segundo ao que deve ser feito.
+            this.addEventListenerAll(btn, "click drag", e => {// primeiro argumento refere-se ao evento e ...
+                //o segundo ao que deve ser feito.
 
-            btn.addEventListener('click', e => {// primeiro argumento refere-se ao evento e o segundo ao que deve ser feito.
+            console.log(btn.className.baseVal.replace("btn-", ""));
 
-            console.log(e);
+                });
 
-                }) 
+            this.addEventListenerAll(btn, "mouseover mouseup mousedown", e =>{
+
+                btn.style.cursor = "pointer";
+            });
                  
-        })
+        });
     }
 
     setDisplayDateTime(){
         //especifica a hora e data de acordo com o idioma.
-        this.displayDate = this.currentDate.toLocaleDateString(this._locale); //(this._locale, {day: "2-digit", month: "long", year: "numeric"}), isso...
-        this.displayTime = this.currentDate.toLocaleTimeString(this._locale) //caso eu desejasse colocar a data por extenso.
+        //(this._locale, {day: "2-digit", month: "long", year: "numeric"}), isso caso eu desejasse colocar a data por extenso.
+        this.displayDate = this.currentDate.toLocaleDateString(this._locale); 
+        this.displayTime = this.currentDate.toLocaleTimeString(this._locale) 
 
  }
 
