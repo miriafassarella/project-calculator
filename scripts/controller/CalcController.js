@@ -1,19 +1,48 @@
 class CalcController {
-
+   
     constructor(){ 
-        
-        //fazendo a amarração com o id do arquivo index.html(Modificando o html via javaScript).
-        //manipulando o DOM
+        this._audio = new Audio('click.mp3');
+        this._audioOnOff = '';
         this._lastOperator = '';
         this._lastNumber = '';
         this._operation =[];
         this._locale = 'pt-BR';
+        //fazendo a amarração com o id do arquivo index.html(Modificando o html via javaScript).
+        //manipulando o DOM
         this._displayCalcEl = document.querySelector("#display");
         this._dateEl = document.querySelector("#data");
         this._timeEl = document.querySelector("#hora");
         this._currentDate;
-        this.initialize(); //Construindo o método(inicializando a função)
+        //Construindo o método(inicializando a função)
+        this.initialize(); 
         this.initButtonsEvents();
+        this.initKeyboard();
+    }
+    //colando informações numéricas no display.
+    pasteFromClipboard(){ 
+    
+        document.addEventListener('paste', e=>{
+
+        let text =   e.clipboardData.getData('Text');
+
+        this.displayCalc = parseFloat(text);
+          console.log(text);
+        })
+
+    }
+
+    copyToClipboard(){ 
+
+      let input = document.createElement('input');
+      input.value = this.displayCalc;  
+
+      document.body.appendChild(input);
+
+      input.select();
+       
+      //copiando tudo o que está selecionado.
+        document.execCommand('Copy'); 
+      input.remove(); //utilizando o input devido ao svg.
     }
 
     initialize(){ 
@@ -27,10 +56,93 @@ class CalcController {
 
         }, 1000) // esse segundo argumento especifica que a cada mil milisecundos..
         // a hora e a data atualiza, ou seja, a cada segundo.
-        this.setLastNumberToDisplay(); // a calculadora inicia com o zero.
+        // a calculadora inicia com o zero.
+        this.setLastNumberToDisplay(); 
+        this.pasteFromClipboard();
+
+        document.querySelectorAll('.btn-ac').forEach(btn=>{
+            btn.addEventListener('dblclick', e=>{
+               this.toggleAudio();
+            })
+           })
+           //desligando o audio por meio do botão CE.
+        document.querySelectorAll('.btn-ce').forEach(btn=>{
+            btn.addEventListener('dblclick', e=>{
+               this.offAudio();
+            })
+           })
     }
 
-    addEventListenerAll(element, events, fn){ //criando um método para tratar múltiplos eventos.
+    offAudio(){
+        return this._audioOnOff = false;
+    }
+   
+
+    toggleAudio(){
+
+        return this._audioOnOff = true;
+
+    }
+    playAudio(){
+        if(this._audioOnOff){
+
+            this._audio.currentTime = 0;
+            this._audio.play();
+        }else{
+            this._audio.pause();
+        }
+
+    }
+    //capturando eventos do teclado.
+    initKeyboard(){ 
+        document.addEventListener('keyup', e=>{
+
+            this.playAudio();
+            
+            switch (e.key) {
+
+                case 'Escape':
+                    this.clearAll();
+                    break;
+                case 'Backspace':
+                    this.clearEntry();
+                    break;
+                case '+':
+                case '-':
+                case '/':
+                case '*':
+                case '%':
+                    this.addOperation(e.key);
+                    break;
+                case 'Enter':
+                case '=':
+                    this.calc();
+                    break;
+                case '.':
+                case ',':
+                    this.addDot('.');
+                    break;
+    
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    this.addOperation(parseInt(e.key));
+                    break;
+                case 'c':
+                    if(e.ctrlKey) this.copyToClipboard();
+                    break;
+        }
+            });
+    }
+    //criando um método para tratar múltiplos eventos.
+    addEventListenerAll(element, events, fn){ 
 
         events.split(' ').forEach(event =>{
 
@@ -51,7 +163,6 @@ class CalcController {
 
         this._operation.pop();
         this.setLastNumberToDisplay();
-
     }
 
     getLastOperation(){//extraindo a última posição do array.
@@ -67,8 +178,8 @@ class CalcController {
     }
 
     isOperation(value){ //verificando se é um operador.
-
-      return ['+', '-', '*', '%', '/'].indexOf(value) > -1; //indexOf traz o index do elemento.
+         //indexOf traz o index do elemento.
+      return ['+', '-', '*', '%', '/'].indexOf(value) > -1;
        // se ele não encontrar retorna -1.
     }
     
@@ -81,14 +192,18 @@ class CalcController {
             this.calc();
 
         }
-
     }
 
     getResult(){
-
+        try{ 
         return eval(this._operation.join(""));
+         
+    }catch{
+        setTimeout(()=>{
+            this.setError();
+        }, 1);
     }
-
+}
     calc(){ //calculando a primeira operação digitada
 //utilizando os três primeiros elementos.
 
@@ -113,12 +228,9 @@ class CalcController {
 
         let result = this.getResult();
 
-        
-        
-
-        if(last == "%"){
-
-            result /= 100;//calculando o porcento.
+         if(last == "%"){
+            //calculando o porcento.
+            result /= 100;
 
             this._operation = [result];
         }else{
@@ -129,10 +241,7 @@ class CalcController {
 
         }
 
-        
-
         this.setLastNumberToDisplay();
-
     }
 
     getLastItem(isOperation = true){
@@ -151,18 +260,16 @@ class CalcController {
 
             lastItem = (isOperation) ? this._lastOperator : this._lastNumber;
             //if tenário é uma versão compacta do if.
-            //? o que vem após o sinal de interogação é o que deve ser executado.
+            //? o que vem após o sinal de interrogação é o que deve ser executado.
             // : os dois pontos se refere ao senão da estrutura comum.
         }
 
         return lastItem;
-
     }
 
     setLastNumberToDisplay(){
 
         let lastNumber = this.getLastItem(false);
-
 
         if(!lastNumber){
             lastNumber = 0;
@@ -172,17 +279,16 @@ class CalcController {
     }
 
     addOperation(value){
-
-       
-
-        if(isNaN(this.getLastOperation())){//se o útimo número digitado não é numérico
+        //se o útimo número digitado não é numérico
+       if(isNaN(this.getLastOperation())){
 
             if(this.isOperation(value)){
-
-                this.setLastOperation(value); //substituindo o item.
+                //substituindo o item.
+                this.setLastOperation(value); 
 
             }else{ 
-                this.pushOperation(value);//adicionando o elemento no array.
+                //adicionando o elemento no array.
+                this.pushOperation(value);
 
                 this.setLastNumberToDisplay();
             }
@@ -193,21 +299,19 @@ class CalcController {
                 this.pushOperation(value);
 
             }else{
-
-                let newValue = this.getLastOperation().toString() + value.toString(); //transformando o valor em uma string
+                //transformando o valor em uma string
+                let newValue = this.getLastOperation().toString() + value.toString(); 
                 this.setLastOperation(newValue); //retornando o valor para número.
 
                 this.setLastNumberToDisplay();
             }
-
-           }
+         }
 }
-
     setError(){
 
         this.displayCalc = "Error";
     }
-
+    
     addDot(){
 let lastOperation = this.getLastOperation();
 
@@ -228,6 +332,8 @@ this.setLastNumberToDisplay();
 
     execBtn(value){
 
+        this.playAudio();
+        
         switch (value) {//tratando as opções clicáveis
 
             case 'ac':
@@ -273,20 +379,18 @@ this.setLastNumberToDisplay();
             default:
                 this.setError();
                 break;
-
         }
     }
 
     initButtonsEvents(){
 
-        let buttons = document.querySelectorAll("#buttons > g, #parts > g"); // *querySelectorAll traz todos ...
-        //os elementos filhos do id.
-
+        let buttons = document.querySelectorAll("#buttons > g, #parts > g");
+         // *querySelectorAll traz todos os elementos filhos do id.
+        
         buttons.forEach((btn, index)=> { //forEach percorre cada elemento.
             // primeiro argumento refere-se ao evento e o segundo ao que deve ser feito.
-            this.addEventListenerAll(btn, "click drag", e => {// primeiro argumento refere-se ao evento e ...
-                //o segundo ao que deve ser feito.
-
+            this.addEventListenerAll(btn, "click drag", e => {
+                
             let textBtn = btn.className.baseVal.replace("btn-", "");
 
             this.execBtn(textBtn);
@@ -302,11 +406,11 @@ this.setLastNumberToDisplay();
 
     setDisplayDateTime(){
         //especifica a hora e data de acordo com o idioma.
-        //(this._locale, {day: "2-digit", month: "long", year: "numeric"}), isso caso eu desejasse colocar a data por extenso.
+        //(this._locale, {day: "2-digit", month: "long", year: "numeric"}), 
+        //isso caso eu desejasse colocar a data por extenso.
         this.displayDate = this.currentDate.toLocaleDateString(this._locale); 
         this.displayTime = this.currentDate.toLocaleTimeString(this._locale) 
-
- }
+}
 
 //recuperando e armazenando informação.
     get displayDate(){
@@ -330,6 +434,12 @@ this.setLastNumberToDisplay();
    }
    
    set displayCalc(value){
+//impedindo que a quantidade de numeros ultrapasse o display.
+    if(value.toString().length > 10){
+        this.setError();
+        return false;
+    }
+
     this._displayCalcEl.innerHTML = value;
    }
 
